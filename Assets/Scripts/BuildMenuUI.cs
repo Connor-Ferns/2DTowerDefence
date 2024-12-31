@@ -37,7 +37,7 @@ public class BuildMenuUI : MonoBehaviour
         for (int i = 0; i < towerButtons.Length; i++)
         {
             int index = i;
-            towerButtons[i].button.onClick.AddListener(() => BuildManager.Instance.AttemptToBuild(index));
+            towerButtons[i].button.onClick.AddListener(() => BuildManager.Instance.StartPlacement(index));
         }
 
         // Hide menu initially

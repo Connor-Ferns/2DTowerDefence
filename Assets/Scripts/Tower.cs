@@ -6,9 +6,28 @@ public class Tower : MonoBehaviour {
     [SerializeField] private float fireRate = 1f;
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform firePoint;
+    [SerializeField] private GameObject rangeIndicator;
 
     private float fireCooldown = 0f;
     private Enemy currentTarget;
+
+    public float GetRange() { return range; }
+
+    public void ShowRange(bool show, Color color)
+    {
+        if (rangeIndicator != null)
+        {
+            rangeIndicator.SetActive(show);
+            SpriteRenderer renderer = rangeIndicator.GetComponent<SpriteRenderer>();
+            if (renderer != null)
+            {
+                renderer.color = color;
+                float spriteSize = renderer.sprite.bounds.size.x;
+                float scaleMultiplier = range / spriteSize;
+                rangeIndicator.transform.localScale = new Vector3(scaleMultiplier, scaleMultiplier, 1);
+            }
+        }
+    }
 
     void Update() {
         if (currentTarget == null || !IsInRange(currentTarget.transform)) {
