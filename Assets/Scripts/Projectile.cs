@@ -1,10 +1,12 @@
 using UnityEngine;
 
-public class Projectile : MonoBehaviour{
+public class Projectile : MonoBehaviour
+{
     [Header("Projectile Properties")]
-    [SerializeField] private float speed = 5f;
+    [SerializeField] private float speed = 10f;
     [SerializeField] private int damage = 2;
     [SerializeField] private float maxLifetime = 5f;
+    [SerializeField] private float leadMultiplier = 1.2f;
 
     private Transform target;
     private float lifetime = 0f;
@@ -18,48 +20,39 @@ public class Projectile : MonoBehaviour{
 
     private void Update()
     {
-        lifetime += Time.deltaTime;
         if (lifetime >= maxLifetime || target == null)
         {
             Destroy(gameObject);
             return;
         }
+        lifetime += Time.deltaTime;
 
         Vector2 currentPosition = transform.position;
         Vector2 targetPosition = PredictTargetPosition();
-        float distanceToTarget = Vector2.Distance(currentPosition, targetPosition);
-
-        if (distanceToTarget < 0.1f)
-        {
-            HitTarget();
-            return;
-        }
-
-        float moveDistance = speed * Time.deltaTime;
-        if (moveDistance >= distanceToTarget)
-        {
-            HitTarget();
-            return;
-        }
-
-        Vector2 direction = (targetPosition - currentPosition).normalized;
-        transform.position += (Vector3)(direction * moveDistance);
         
+        Vector2 direction = (targetPosition - currentPosition).normalized;
+        transform.position = Vector2.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+        if (Vector2.Distance(transform.position, target.position) < 0.1f)
+        {
+            HitTarget();
+        }
     }
 
     private Vector2 PredictTargetPosition()
     {
         if (targetEnemy == null) return target.position;
 
-        float distanceToTarget = Vector2.Distance(transform.position, target.position);
-        float timeToTarget = distanceToTarget / speed;
+        Vector2 targetPos = target.position;
+        Vector2 targetVelocity = targetEnemy.GetVelocity();
+        Vector2 toTarget = targetPos - (Vector2)transform.position;
+        float distance = toTarget.magnitude;
+        float timeToTarget = distance / speed;
 
-        Vector2 enemyPos = target.position;
-        Vector2 enemyVelocity = targetEnemy.GetVelocity();
-
-        return enemyPos + (enemyVelocity * timeToTarget);
+        return targetPos + (targetVelocity * timeToTarget * leadMultiplier);
     }
 
     void HitTarget()
